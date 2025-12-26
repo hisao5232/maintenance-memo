@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:15
+    container_name: maintenance-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - maintenance_net
+
+  api:
+    build: ./backend
+    container_name: maintenance-api
+    restart: always
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      - db
+    networks:
+      - maintenance_net
+      - traefik-service_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.maintenance-api.rule=Host(`${DOMAIN_API}`)"
+      - "traefik.http.routers.maintenance-api.entrypoints=websecure"
+      - "traefik.http.routers.maintenance-api.tls=true"
+      - "traefik.http.routers.maintenance-api.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.services.maintenance-api.loadbalancer.server.port=8000"
+      - "traefik.docker.network=traefik-service_default"
+
+  frontend:
+    build: ./frontend
+    container_name: maintenance-frontend
+    restart: always
+    environment:
+      - API_URL=http://api:8000
+    depends_on:
+      - api
+    networks:
+      - maintenance_net
+      - traefik-service_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.maintenance-frontend.rule=Host(`${DOMAIN_MEMO}`)"
+      - "traefik.http.routers.maintenance-frontend.entrypoints=websecure"
+      - "traefik.http.routers.maintenance-frontend.tls=true"
+      - "traefik.http.routers.maintenance-frontend.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.services.maintenance-frontend.loadbalancer.server.port=8501"
+      - "traefik.docker.network=traefik-service_default"
+
+networks:
+  maintenance_net:
+  traefik-service_default:
+    external: true
+    

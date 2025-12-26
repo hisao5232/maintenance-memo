@@ -1,0 +1,11 @@
+# Pythonキャッシュ
+__pycache__/
+*.pyc
+
+# DBの実データ（これはGitに上げない）
+postgres_data/
+
+# OSのゴミファイル
+.DS_Store
+
+.env
