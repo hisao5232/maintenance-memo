@@ -38,6 +38,8 @@ services:
     restart: always
     environment:
       - API_URL=http://api:8000
+      - APP_USERNAME=${APP_USERNAME}
+      - APP_PASSWORD=${APP_PASSWORD}
     depends_on:
       - api
     networks:

@@ -53,14 +53,31 @@ try:
         # 新しい順に表示
         for r in reversed(records):
             with st.container():
-                col1, col2 = st.columns([1, 4])
+                col1, col2, col3 = st.columns([1, 4, 1])
+                
                 with col1:
                     label_color = "green" if r["category"] == "整備系" else "blue"
                     st.markdown(f":{label_color}[{r['category']}]")
                     st.caption(r["date"] or "日付なし")
+                    
                 with col2:
                     st.subheader(f"{r['model_name'] or '型式不明'} ({r['serial_number'] or '-'})")
                     st.write(r["content"])
+                    
+                with col3:
+                    # --- ここから削除ボタン（ポップオーバー形式） ---
+                    with st.popover("🗑️"):
+                        st.write("このメモを削除しますか？")
+                        if st.button("はい、削除します", key=f"conf_{r['id']}", type="primary"):
+                            try:
+                                res = requests.delete(f"{API_URL}/records/{r['id']}")
+                                if res.status_code == 200:
+                                    st.success("削除完了")
+                                    st.rerun()  # 画面を更新
+                                else:
+                                    st.error("削除失敗")
+                            except Exception as e:
+                                st.error(f"通信エラー: {e}")
                 st.divider()
 
 except Exception as e:

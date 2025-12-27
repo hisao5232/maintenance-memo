@@ -1,12 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from datetime import date
 from typing import List, Optional, Any
 from pydantic import BaseModel
 
-# 別で作った設定ファイルをインポート
 import models
 from database import engine, SessionLocal
 
@@ -23,10 +20,9 @@ def get_db():
     finally:
         db.close()
 
-# --- リクエスト/レスポンス用のデータ型定義 (Pydantic) ---
+# --- Pydanticモデル定義 ---
 
 class RecordBase(BaseModel):
-    # すべて Optional にし、デフォルトを None に設定
     category: Optional[Any] = None
     date: Optional[Any] = None
     model_name: Optional[Any] = None
@@ -41,21 +37,20 @@ class RecordCreate(RecordBase):
 
 class RecordResponse(RecordBase):
     id: int
-    class Config:
-        from_attributes = True
 
 # --- APIエンドポイント ---
 
 # 1. メモの登録
 @app.post("/records/", response_model=RecordResponse)
 def create_record(record: RecordCreate, db: Session = Depends(get_db)):
+    # .dict() は Pydantic v2 では .model_dump() 推奨ですが、互換性のため一旦そのままでもOK
     db_record = models.MaintenanceRecord(**record.dict())
     db.add(db_record)
     db.commit()
     db.refresh(db_record)
     return db_record
 
-# 2. メモの一覧取得（検索も可能）
+# 2. メモの一覧取得（検索）
 @app.get("/records/", response_model=List[RecordResponse])
 def read_records(
     q: Optional[str] = None, 
@@ -64,11 +59,9 @@ def read_records(
 ):
     query = db.query(models.MaintenanceRecord)
     
-    # カテゴリ絞り込み
     if category:
         query = query.filter(models.MaintenanceRecord.category == category)
     
-    # キーワード検索（型式、機番、内容からあいまい検索）
     if q:
         search = f"%{q}%"
         query = query.filter(
@@ -79,9 +72,17 @@ def read_records(
     
     return query.all()
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-@app.get("/")
-async def read_index():
-    return FileResponse('static/index.html')
-
+# 3. 削除機能 (クラス名を MaintenanceRecord に修正)
+@app.delete("/records/{record_id}")
+def delete_record(record_id: int, db: Session = Depends(get_db)):
+    # 修正ポイント: database.get_db ではなく get_db を使用
+    # 修正ポイント: models.Record ではなく models.MaintenanceRecord を使用
+    db_record = db.query(models.MaintenanceRecord).filter(models.MaintenanceRecord.id == record_id).first()
+    
+    if db_record is None:
+        raise HTTPException(status_code=404, detail="Record not found")
+    
+    db.delete(db_record)
+    db.commit()
+    return {"message": "削除に成功しました"}
+    
