@@ -50,7 +50,7 @@ def create_record(record: RecordCreate, db: Session = Depends(get_db)):
     db.refresh(db_record)
     return db_record
 
-# 2. メモの一覧取得（検索）
+# 2. メモの一覧取得（AND検索（絞り込み検索）
 @app.get("/records/", response_model=List[RecordResponse])
 def read_records(
     q: Optional[str] = None, 
@@ -63,14 +63,20 @@ def read_records(
         query = query.filter(models.MaintenanceRecord.category == category)
     
     if q:
-        search = f"%{q}%"
-        query = query.filter(
-            (models.MaintenanceRecord.model_name.ilike(search)) |
-            (models.MaintenanceRecord.serial_number.ilike(search)) |
-            (models.MaintenanceRecord.content.ilike(search))
-        )
+        # 全角・半角スペースの両方で分割できるようにする
+        keywords = q.replace('　', ' ').split()
+        
+        for kw in keywords:
+            search = f"%{kw}%"
+            # 各単語に対して「型式」「機番」「内容」のいずれかに含まれるかチェック
+            query = query.filter(
+                (models.MaintenanceRecord.model_name.ilike(search)) |
+                (models.MaintenanceRecord.serial_number.ilike(search)) |
+                (models.MaintenanceRecord.content.ilike(search))
+            )
     
-    return query.all()
+    # 最後に日付の新しい順に並べ替えると見やすいです
+    return query.order_by(models.MaintenanceRecord.date.desc()).all()
 
 # 3. 削除機能 (クラス名を MaintenanceRecord に修正)
 @app.delete("/records/{record_id}")
