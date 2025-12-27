@@ -1,0 +1,14 @@
+[theme]
+# アクセントカラー：視認性の高いシアン（水色）
+primaryColor = "#00D1FF"
+
+# 背景色：深い紺色（真っ黒より目が疲れにくい）
+backgroundColor = "#0E1117"
+
+# 入力エリアなどの背景：少し明るいグレー
+secondaryBackgroundColor = "#262730"
+
+# 文字色：白
+textColor = "#FFFFFF"
+
+font = "sans serif"

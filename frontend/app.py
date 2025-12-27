@@ -6,7 +6,18 @@ from datetime import date
 # docker-compose.ymlで設定した環境変数からAPIのURLを取得
 API_URL = os.getenv("API_URL")
 
-st.set_page_config(page_title="整備メモ", page_icon="🛠️")
+st.set_page_config(
+    page_title="Maintenance Memo APP",
+    page_icon="🚜",
+    layout="wide" # 画面幅を広く使う
+)
+
+# ヘッダーを少しおしゃれに
+st.markdown("""
+    <div style="background-color:#2E5BFF;padding:10px;border-radius:10px;margin-bottom:25px;">
+        <h1 style="color:white;text-align:center;margin:0;">🚜 Maintenance Management</h1>
+    </div>
+    """, unsafe_allow_html=True)
 
 # --- ログインチェック用関数 ---
 def check_password():
@@ -41,8 +52,7 @@ def check_password():
         return True
 
 # --- メイン処理 ---
-if check_password():
-    # ここに今までのアプリの内容をすべて入れる    
+if check_password():  
     st.title("🛠️ 整備メモ・マニュアル")
 
     # --- サイドバー：新規登録 ---
