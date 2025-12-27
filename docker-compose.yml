@@ -53,6 +53,8 @@ services:
       - "traefik.http.routers.maintenance-frontend.tls.certresolver=${CERT_RESOLVER}"
       - "traefik.http.services.maintenance-frontend.loadbalancer.server.port=8501"
       - "traefik.docker.network=traefik-service_default"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.maintenance-frontend.middlewares=sslheader"
 
 networks:
   maintenance_net:
