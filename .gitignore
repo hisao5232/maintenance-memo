@@ -9,3 +9,9 @@ postgres_data/
 .DS_Store
 
 .env
+
+Plaintext
+
+# データベースのバックアップファイルを除外
+*.sql
+backups/

@@ -4,9 +4,9 @@ services:
     container_name: maintenance-db
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
     networks:
@@ -17,12 +17,12 @@ services:
     container_name: maintenance-api
     restart: always
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      - DATABASE_URL=${DATABASE_URL}
     depends_on:
       - db
     networks:
       - maintenance_net
-      - traefik-service_default
+      - traefik-public  # ★修正
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.maintenance-api.rule=Host(`${DOMAIN_API}`)"
@@ -30,7 +30,7 @@ services:
       - "traefik.http.routers.maintenance-api.tls=true"
       - "traefik.http.routers.maintenance-api.tls.certresolver=${CERT_RESOLVER}"
       - "traefik.http.services.maintenance-api.loadbalancer.server.port=8000"
-      - "traefik.docker.network=traefik-service_default"
+      - "traefik.docker.network=traefik-public"  # ★修正
 
   frontend:
     build: ./frontend
@@ -44,7 +44,7 @@ services:
       - api
     networks:
       - maintenance_net
-      - traefik-service_default
+      - traefik-public  # ★修正
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.maintenance-frontend.rule=Host(`${DOMAIN_MEMO}`)"
@@ -52,12 +52,11 @@ services:
       - "traefik.http.routers.maintenance-frontend.tls=true"
       - "traefik.http.routers.maintenance-frontend.tls.certresolver=${CERT_RESOLVER}"
       - "traefik.http.services.maintenance-frontend.loadbalancer.server.port=8501"
-      - "traefik.docker.network=traefik-service_default"
+      - "traefik.docker.network=traefik-public"  # ★修正
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.routers.maintenance-frontend.middlewares=sslheader"
 
 networks:
-  maintenance_net:
-  traefik-service_default:
+  maintenance_net:  # これはコンテナ間の通信用（閉じられたLAN）
+  traefik-public:   # これはTraefikと繋がる用（公道の出口）
     external: true
-    
