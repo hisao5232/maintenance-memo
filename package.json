@@ -5,6 +5,6 @@
     "@stlite/mountable": "latest"
   },
   "scripts": {
-    "build": "npx -p @stlite/mountable stlite-build frontend/app.py --output dist"
+    "build": "./node_modules/@stlite/mountable/bin/stlite-build frontend/app.py --output dist"
   }
 }
