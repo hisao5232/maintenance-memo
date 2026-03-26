@@ -1,17 +1,13 @@
 import streamlit as st
-# --- stlite (Pyodide) 用のパッチ: 冒頭に追加 ---
-try:
-    import pyodide_http
-    pyodide_http.patch_all()
-except ImportError:
-    pass
-# --------------------------------------------
 import requests
 import os
 from datetime import date
 
-# docker-compose.ymlで設定した環境変数からAPIのURLを取得
-API_URL = os.getenv("API_URL")
+# --- Streamlit Cloud (Secrets) から設定を取得 ---
+# 管理画面のSecretsに入れた値が st.secrets で取得できます
+API_URL = st.secrets.get("API_URL", os.getenv("API_URL"))
+APP_USERNAME = st.secrets.get("APP_USERNAME", os.getenv("APP_USERNAME", "admin"))
+APP_PASSWORD = st.secrets.get("APP_PASSWORD", os.getenv("APP_PASSWORD", "password"))
 
 st.set_page_config(
     page_title="Maintenance Memo APP",
@@ -23,13 +19,9 @@ st.set_page_config(
 def check_password():
     """ユーザー名とパスワードが正しいかチェックする"""
     def password_entered():
-        # 環境変数が取得できない場合の予備策として空文字と比較
-        correct_user = os.getenv("APP_USERNAME", "admin") 
-        correct_pass = os.getenv("APP_PASSWORD", "password")
-        
         if (
-            st.session_state["username"] == correct_user
-            and st.session_state["password"] == correct_pass
+            st.session_state["username"] == APP_USERNAME
+            and st.session_state["password"] == APP_PASSWORD
         ):
             st.session_state["password_correct"] = True
             del st.session_state["password"]
@@ -38,21 +30,18 @@ def check_password():
             st.session_state["password_correct"] = False
 
     if "password_correct" not in st.session_state:
-        # 初回表示：ログインフォームを出す
         st.title("🛠️ 整備メモ ログイン")
         st.text_input("ユーザー名", key="username")
         st.text_input("パスワード", type="password", key="password")
         st.button("ログイン", on_click=password_entered)
         return False
     elif not st.session_state["password_correct"]:
-        # パスワード間違い時
         st.text_input("ユーザー名", key="username")
         st.text_input("パスワード", type="password", key="password")
         st.button("ログイン", on_click=password_entered)
         st.error("😕 ユーザー名またはパスワードが違います")
         return False
     else:
-        # ログイン成功
         return True
 
 # --- メイン処理 ---
