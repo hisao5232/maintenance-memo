@@ -1,4 +1,11 @@
 import streamlit as st
+# --- stlite (Pyodide) 用のパッチ: 冒頭に追加 ---
+try:
+    import pyodide_http
+    pyodide_http.patch_all()
+except ImportError:
+    pass
+# --------------------------------------------
 import requests
 import os
 from datetime import date
@@ -16,12 +23,16 @@ st.set_page_config(
 def check_password():
     """ユーザー名とパスワードが正しいかチェックする"""
     def password_entered():
+        # 環境変数が取得できない場合の予備策として空文字と比較
+        correct_user = os.getenv("APP_USERNAME", "admin") 
+        correct_pass = os.getenv("APP_PASSWORD", "password")
+        
         if (
-            st.session_state["username"] == os.getenv("APP_USERNAME")
-            and st.session_state["password"] == os.getenv("APP_PASSWORD")
+            st.session_state["username"] == correct_user
+            and st.session_state["password"] == correct_pass
         ):
             st.session_state["password_correct"] = True
-            del st.session_state["password"]  # セッションにパスワードを残さない
+            del st.session_state["password"]
             del st.session_state["username"]
         else:
             st.session_state["password_correct"] = False

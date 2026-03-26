@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from datetime import date
 from typing import List, Optional, Any
 from pydantic import BaseModel
-
 import models
 from database import engine, SessionLocal
 
@@ -11,6 +11,14 @@ from database import engine, SessionLocal
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="整備メモ API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://memo.go-pro-world.net"], # フロントエンドのドメインを許可
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # DBセッションの取得用
 def get_db():
