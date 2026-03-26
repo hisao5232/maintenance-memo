@@ -1,10 +1,10 @@
 {
   "name": "maintenance-memo-stlite",
   "version": "1.0.0",
-  "devDependencies": {
+  "dependencies": {
     "@stlite/mountable": "latest"
   },
   "scripts": {
-    "build": "./node_modules/.bin/stlite-build frontend/app.py --output dist"
+    "build": "npx stlite-build frontend/app.py --output dist"
   }
 }
