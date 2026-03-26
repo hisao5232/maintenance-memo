@@ -1,0 +1,10 @@
+{
+  "name": "maintenance-memo-stlite",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@stlite/mountable": "latest"
+  },
+  "scripts": {
+    "build": "stlite-build frontend/app.py --output dist"
+  }
+}
