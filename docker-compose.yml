@@ -32,30 +32,6 @@ services:
       - "traefik.http.services.maintenance-api.loadbalancer.server.port=8000"
       - "traefik.docker.network=traefik-public"  # ★修正
 
-  frontend:
-    build: ./frontend
-    container_name: maintenance-frontend
-    restart: always
-    environment:
-      - API_URL=http://api:8000
-      - APP_USERNAME=${APP_USERNAME}
-      - APP_PASSWORD=${APP_PASSWORD}
-    depends_on:
-      - api
-    networks:
-      - maintenance_net
-      - traefik-public  # ★修正
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.maintenance-frontend.rule=Host(`${DOMAIN_MEMO}`)"
-      - "traefik.http.routers.maintenance-frontend.entrypoints=websecure"
-      - "traefik.http.routers.maintenance-frontend.tls=true"
-      - "traefik.http.routers.maintenance-frontend.tls.certresolver=${CERT_RESOLVER}"
-      - "traefik.http.services.maintenance-frontend.loadbalancer.server.port=8501"
-      - "traefik.docker.network=traefik-public"  # ★修正
-      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.maintenance-frontend.middlewares=sslheader"
-
 networks:
   maintenance_net:  # これはコンテナ間の通信用（閉じられたLAN）
   traefik-public:   # これはTraefikと繋がる用（公道の出口）
